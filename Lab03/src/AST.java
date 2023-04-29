@@ -413,7 +413,7 @@ class Value extends Expr {
     Object value = null; // Type type;
     
     Value(Type t) {
-        type = t;  
+        type = t;
         if (type == Type.INT) value = new Integer(0);
         if (type == Type.BOOL) value = new Boolean(false);
         if (type == Type.STRING) value = "";
@@ -512,6 +512,22 @@ class Unary extends Expr {
         Indent.display(level, "Unary");
         op.display(level+1);
         expr.display(level+1);
+    }
+}
+
+class Dowhile extends Stmt{
+    Stmt stmt;
+    While wh;
+
+    Dowhile(Stmt s, While w){
+        stmt = s;
+        wh = w;
+    }
+
+    @Override
+    public void display(int level) {
+        stmt.display(level);
+        wh.display(level);
     }
 }
 

@@ -125,27 +125,41 @@ public class Parser {
     // <stmt> -> <block> | <assignment> | <ifStmt> | <whileStmt> | ...
         Stmt s = new Empty();
         switch (token) {
-	    case SEMICOLON:
-            match(token.SEMICOLON); return s;
-        case LBRACE:			
-	        match(Token.LBRACE);		
-            s = stmts();
-            match(Token.RBRACE);	
-	        return s;
-        case IF: 	// if statement 
-            s = ifStmt(); return s;
-        case WHILE:      // while statement 
-            s = whileStmt(); return s;
-        case ID:	// assignment
-            s = assignment(); return s;
-	    case LET:	// let statement 
-            s = letStmt(); return s;
-	    case READ:	// read statement 
-            s = readStmt(); return s;
-	    case PRINT:	// print statment 
-            s = printStmt(); return s;
-	    case RETURN: // return statement 
-            s = returnStmt(); return s;
+            case SEMICOLON:
+                match(token.SEMICOLON);
+                return s;
+            case LBRACE:
+                match(Token.LBRACE);
+                s = stmts();
+                match(Token.RBRACE);
+                return s;
+            case IF:    // if statement
+                s = ifStmt();
+                return s;
+            case WHILE:      // while statement
+                s = whileStmt();
+                return s;
+            case ID:    // assignment
+                s = assignment();
+                return s;
+            case LET:    // let statement
+                s = letStmt();
+                return s;
+            case READ:    // read statement
+                s = readStmt();
+                return s;
+            case PRINT:    // print statment
+                s = printStmt();
+                return s;
+            case RETURN: // return statement
+                s = returnStmt();
+                return s;
+            case DO:
+                s = dowhileStmt();
+                return s;
+            case FOR:
+                s = forStmt();
+                return s;
         default:  
 	        error("Illegal stmt"); return null; 
 	    }
@@ -251,6 +265,42 @@ public class Parser {
         match(Token.RPAREN); // )
         Stmt s = stmt(); // <stmt>
         return new While(e, s); // Parsing 후 While 객체 생성 후 return
+    }
+
+    private Stmt dowhileStmt(){
+        match(Token.DO); // do
+        Stmt s = stmt(); // <stmt> -> '{' <stmts> '}'
+        match(Token.WHILE); // while
+        match(Token.LPAREN); // (
+        Expr e = expr(); // <expr>
+        match(Token.RPAREN); // )
+        match(Token.SEMICOLON); // ;
+        While w = new While(e, s); // 조건 e와 구문 s를 가지는 While 객체 생성 후
+        Stmts ss = new Stmts(s); // Stmts에 구문 s를 우선 추가하고
+        ss.stmts.add(w); // 반복할 While문 w를 추가하고
+        return ss; // Stmts 객체 return
+    }
+
+    private Let forStmt(){
+        match(Token.FOR); // for
+        match(Token.LPAREN); // (
+        Decl d = decl(); // <decl> -> <type> id[= <expr>];
+
+        Expr e1 = expr(); // <expr>
+        match(Token.SEMICOLON); // ;
+
+        Identifier id = new Identifier(match(Token.ID)); // id
+        match(Token.ASSIGN); // =
+        Expr e2 = expr(); // <expr>
+        Stmt s1 = new Assignment(id, e2); // id에 e2를 대입한 Assignment 객체 생성
+        match(Token.RPAREN); // )
+
+        Stmt s2 = stmt(); // <stmt>
+
+        Stmts ss = new Stmts(s2); // Stmts에 for문에서 실행할 구문 s2를 우선 추가
+        ss.stmts.add(s1); // 그 후 증감문 s1을 추가
+        While w = new While(e1, ss); // for문을 while로 표현한 형식으로 While 객체 생성
+        return new Let(new Decls(d), new Stmts(w)); // 그 후 선언부에 Decl d, 실행 구문에 While w을 넣은 Let 객체 생성 후 return
     }
 
     private Expr expr () {
